@@ -1,36 +1,25 @@
 import numpy as np
-from scipy.stats import norm
 from flask import Flask, request, jsonify
+from sklearn.naive_bayes import GaussianNB
 
 app = Flask(__name__)
 
 # -----------------------------
-# Two Proportion Test Function
+# Naive Bayes Classifier
 # -----------------------------
-def twoP_test(x, y, alpha=0.05, alternative='two-sided'):
+def naive_bayes_classify(X, y, sample):
 
-    n1 = len(x)
-    n2 = len(y)
+    model = GaussianNB()
 
-    p1 = sum(x) / n1
-    p2 = sum(y) / n2
+    X = np.array(X)
+    y = np.array(y)
+    sample = np.array(sample).reshape(1, -1)
 
-    pbar = ((n1 * p1 + n2 * p2) / (n1 + n2))
+    model.fit(X, y)
 
-    se = np.sqrt((pbar * (1 - pbar)) * ((1 / n1) + (1 / n2)))
+    prediction = model.predict(sample)
 
-    z = (p1 - p2) / se
-
-    if alternative == "two-sided":
-        p = 2 * (1 - norm.cdf(abs(z)))
-    elif alternative == "right":
-        p = 1 - norm.cdf(z)
-    else:
-        p = norm.cdf(z)
-
-    result = "hypothesis rejected" if p < alpha else "hypothesis accepted"
-
-    return z, p, result
+    return prediction[0]
 
 
 # -----------------------------
@@ -38,37 +27,27 @@ def twoP_test(x, y, alpha=0.05, alternative='two-sided'):
 # -----------------------------
 @app.route("/")
 def home():
-    return "Flask server working"
+    return "Naive Bayes Flask API Working"
 
 
 # -----------------------------
 # API Route
 # -----------------------------
-@app.route("/test", methods=["POST"])
-def run_test():
+@app.route("/predict", methods=["POST"])
+def run_nb():
 
     data = request.json
 
-    x = data["x"]
-    y = data["y"]
+    X = data["X"]       # training features
+    y = data["y"]       # labels
+    sample = data["sample"]  # new input
 
-    z, p, result = twoP_test(x, y)
+    prediction = naive_bayes_classify(X, y, sample)
 
     return jsonify({
-        "z_statistic": z,
-        "p_value": p,
-        "decision": result
+        "prediction": int(prediction)
     })
 
 
-# -----------------------------
-# Run Server
-# -----------------------------
 if __name__ == "__main__":
     app.run(debug=True)
-
-from flask import render_template
-
-@app.route("/")
-def home():
-    return render_template("index.html")
