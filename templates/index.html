@@ -1,58 +1,79 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Two Proportion Z Test</title>
+<title>Naive Bayes Classifier</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f2f2f2;
+text-align:center;
+padding:40px;
+}
+
+.container{
+background:white;
+padding:30px;
+border-radius:10px;
+width:450px;
+margin:auto;
+box-shadow:0px 0px 10px gray;
+}
+
+input,textarea{
+width:90%;
+padding:10px;
+margin:10px;
+}
+
+button{
+padding:10px 20px;
+background:#4CAF50;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+</style>
 </head>
 
 <body>
 
-<h2>Two Proportion Z Test</h2>
+<div class="container">
 
-<input id="x" placeholder="Sample 1 (example: 1,0,1,1,0)">
+<h2>Naive Bayes Classifier</h2>
 
-<br><br>
+<form method="POST" action="/predict">
 
-<input id="y" placeholder="Sample 2 (example: 1,1,0,0,1)">
+<label>Training Data (rows separated by ;)</label><br>
 
-<br><br>
+<textarea name="X" placeholder="1,20;2,21;3,22;4,23"></textarea>
 
-<button onclick="runTest()">Run Test</button>
+<br>
 
-<p id="output"></p>
+<label>Labels</label><br>
 
-<script>
+<input name="y" placeholder="0,0,1,1">
 
-function runTest(){
+<br>
 
-let x=document.getElementById("x").value.split(",").map(Number);
-let y=document.getElementById("y").value.split(",").map(Number);
+<label>Sample to Predict</label><br>
 
-fetch("/test",{
+<input name="sample" placeholder="3,22">
 
-method:"POST",
+<br>
 
-headers:{
-"Content-Type":"application/json"
-},
+<button type="submit">Predict</button>
 
-body:JSON.stringify({x:x,y:y})
+</form>
 
-})
+{% if prediction is defined %}
 
-.then(res=>res.json())
+<h3>Prediction: {{prediction}}</h3>
 
-.then(data=>{
+{% endif %}
 
-document.getElementById("output").innerHTML=
-"Z Statistic: "+data.z_statistic+
-"<br>P Value: "+data.p_value+
-"<br>Decision: "+data.decision;
-
-});
-
-}
-
-</script>
+</div>
 
 </body>
 </html>
