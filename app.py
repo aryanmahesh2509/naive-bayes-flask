@@ -1,21 +1,21 @@
 import numpy as np
-from flask import Flask, request, jsonify
+from flask import Flask, request, render_template
 from sklearn.naive_bayes import GaussianNB
 
 app = Flask(__name__)
 
 # -----------------------------
-# Naive Bayes Classifier
+# Naive Bayes Function
 # -----------------------------
-def naive_bayes_classify(X, y, sample):
+def naive_bayes_predict(X, y, sample):
 
     model = GaussianNB()
 
     X = np.array(X)
     y = np.array(y)
-    sample = np.array(sample).reshape(1, -1)
+    sample = np.array(sample).reshape(1,-1)
 
-    model.fit(X, y)
+    model.fit(X,y)
 
     prediction = model.predict(sample)
 
@@ -23,30 +23,30 @@ def naive_bayes_classify(X, y, sample):
 
 
 # -----------------------------
-# Home Route
+# Home Page (Frontend)
 # -----------------------------
 @app.route("/")
 def home():
-    return "Naive Bayes Flask API Working"
+    return render_template("index.html")
 
 
 # -----------------------------
-# API Route
+# Prediction Route
 # -----------------------------
 @app.route("/predict", methods=["POST"])
-def run_nb():
+def predict():
 
-    data = request.json
+    X = request.form["X"]
+    y = request.form["y"]
+    sample = request.form["sample"]
 
-    X = data["X"]       # training features
-    y = data["y"]       # labels
-    sample = data["sample"]  # new input
+    X = [list(map(float,row.split(","))) for row in X.split(";")]
+    y = list(map(int,y.split(",")))
+    sample = list(map(float,sample.split(",")))
 
-    prediction = naive_bayes_classify(X, y, sample)
+    prediction = naive_bayes_predict(X,y,sample)
 
-    return jsonify({
-        "prediction": int(prediction)
-    })
+    return render_template("index.html", prediction=prediction)
 
 
 if __name__ == "__main__":
